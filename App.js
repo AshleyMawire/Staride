@@ -21,7 +21,7 @@ const linking = {
   prefixes: ['http://yourapp.com', 'https://yourapp.com'],
   config: {
     screens: {
-      Home: 'home',
+      Home: '',
       Student: 'student',
       DriverOSP: 'driverosp',
     },
