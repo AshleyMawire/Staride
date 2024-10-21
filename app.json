@@ -1,0 +1,28 @@
+{
+  "expo": {
+    "name": "transschedule",
+    "slug": "snack-e2e00703-82d5-4c99-b863-c9e2d276dcb8",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/applogo.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/applogo.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/applogo.png",
+        "backgroundColor": "#ffffff"
+      },
+      "package": "com.ushley.snacke2e0070382d54c99b863c9e2d276dcb8"
+    },
+    "web": {
+      "favicon": "./assets/applogo.png"
+    }
+  }
+}

@@ -1,0 +1,568 @@
+import React, { useState, useEffect } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  TextInput,
+  ScrollView,
+  Alert,
+} from 'react-native';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { NavigationContainer } from '@react-navigation/native';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { Picker } from '@react-native-picker/picker';
+import { Client, Databases, ID } from 'appwrite';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+// Initialize Appwrite client
+const client = new Client()
+  .setEndpoint('https://cloud.appwrite.io/v1') // Replace with your Appwrite endpoint
+  .setProject('670ed3a4003543fc2496'); // Replace with your project ID
+
+const databases = new Databases(client);
+const DATABASE_ID = '670ed992001991e51d97'; // Replace with your database ID
+const COLLECTION_ID = '670ed9a60000deb26c2b'; // Replace with your collection ID
+
+const Tab = createBottomTabNavigator();
+
+const StudentHomeScreen = ({ navigation }) => {
+  const [isFormVisible, setIsFormVisible] = useState(false);
+  const [darkMode, setDarkMode] = useState(false);
+  const [eventCategory, setEventCategory] = useState('School');
+  const [otherCategory, setOtherCategory] = useState('');
+  const [destination, setDestination] = useState('');
+  const [date, setDate] = useState('');
+  const [pickupTime, setPickupTime] = useState('');
+  const [pickupPlace, setPickupPlace] = useState('');
+  const [returnDate, setReturnDate] = useState('');
+  const [pickupTimeReturn, setPickupTimeReturn] = useState('');
+  const [requests, setRequests] = useState([]);
+  const [username, setUsername] = useState('');
+
+  useEffect(() => {
+    const fetchUsernameAndRequests = async () => {
+      try {
+        const storedUsername = await AsyncStorage.getItem('username');
+        if (storedUsername) {
+          setUsername(storedUsername);
+          fetchRequests(storedUsername);
+        }
+      } catch (error) {
+        console.error('Error fetching username from storage:', error);
+      }
+    };
+
+    fetchUsernameAndRequests();
+  }, []);
+
+  const fetchRequests = async (currentUsername) => {
+    try {
+      const response = await databases.listDocuments(
+        DATABASE_ID,
+        COLLECTION_ID
+      );
+      const userRequests = response.documents.filter(
+        (request) => request.studentname === currentUsername
+      );
+      setRequests(userRequests);
+    } catch (error) {
+      console.error('Error fetching requests:', error);
+    }
+  };
+
+  const toggleFormVisibility = () => {
+    setIsFormVisible(!isFormVisible);
+  };
+
+  const validateInputs = () => {
+    const datePattern = /^\d{2}\/\d{2}\/\d{4}$/; // Regular expression for dd/mm/yyyy
+    const timePattern = /^(0?[1-9]|1[0-2]):[0-5][0-9] (AM|PM)$/; // Regular expression for hh:mm AM/PM
+
+    if (
+      !destination.trim() &&
+      !date.trim() &&
+      !pickupTime.trim() &&
+      !pickupPlace.trim() &&
+      !returnDate.trim() &&
+      !pickupTimeReturn.trim()
+    ) {
+      Alert.alert('Oops cannot submit request', 'All fields are required');
+      return false;
+    }
+
+    if (!destination.trim()) {
+      Alert.alert('Oops cannot submit request', 'Destination is required');
+      return false;
+    }
+    if (!date.trim()) {
+      Alert.alert('Oops cannot submit request', 'Date of Travel is required');
+      return false;
+    }
+    if (!datePattern.test(date)) {
+      Alert.alert(
+        'Oops cannot submit request',
+        'Date of Travel must be in the format dd/mm/yyyy'
+      );
+      return false;
+    }
+    if (!pickupTime.trim()) {
+      Alert.alert('Oops cannot submit request', 'Pickup Time is required');
+      return false;
+    }
+    if (!timePattern.test(pickupTime)) {
+      Alert.alert(
+        'Oops cannot submit request',
+        'Pickup Time must be in the format hh:mm AM/PM'
+      );
+      return false;
+    }
+    if (!pickupPlace.trim()) {
+      Alert.alert('Oops cannot submit request', 'Pickup Place is required');
+      return false;
+    }
+    if (!returnDate.trim()) {
+      Alert.alert('Oops cannot submit request', 'Return Date is required');
+      return false;
+    }
+    if (!datePattern.test(returnDate)) {
+      Alert.alert(
+        'Oops cannot submit request',
+        'Return Date must be in the format dd/mm/yyyy'
+      );
+      return false;
+    }
+    if (!pickupTimeReturn.trim()) {
+      Alert.alert(
+        'Oops cannot submit request',
+        'Pickup Time on Return is required'
+      );
+      return false;
+    }
+    if (!timePattern.test(pickupTimeReturn)) {
+      Alert.alert(
+        'Oops cannot submit request',
+        'Pickup Time on Return must be in the format hh:mm AM/PM'
+      );
+      return false;
+    }
+    return true;
+};
+
+  const handleSubmitRequest = async () => {
+    if (validateInputs()) {
+      const newRequest = {
+        studentname: username,
+        destination,
+        datetravel: date,
+        pickuptime: pickupTime,
+        pickupplace: pickupPlace,
+        returndate: returnDate,
+        pickuptimereturn: pickupTimeReturn,
+        category: eventCategory,
+        description: eventCategory === 'Other' ? otherCategory : '',
+      };
+
+      try {
+        const response = await databases.createDocument(
+          DATABASE_ID,
+          COLLECTION_ID,
+          ID.unique(),
+          newRequest
+        );
+        setRequests([...requests, response]);
+        clearForm();
+        toggleFormVisibility();
+      } catch (error) {
+        console.error('Error creating request:', error);
+      }
+    }
+  };
+
+  const clearForm = () => {
+    setDestination('');
+    setDate('');
+    setPickupTime('');
+    setPickupPlace('');
+    setReturnDate('');
+    setPickupTimeReturn('');
+    setOtherCategory('');
+    setEventCategory('School');
+  };
+
+  const cancelRequest = async (id) => {
+    try {
+      await databases.deleteDocument(DATABASE_ID, COLLECTION_ID, id);
+      setRequests(requests.filter((request) => request.$id !== id));
+    } catch (error) {
+      console.error('Error deleting request:', error);
+    }
+  };
+
+  const toggleDarkMode = () => {
+    setDarkMode(!darkMode);
+  };
+
+  return (
+    <View style={[styles.container, darkMode ? styles.darkContainer : {}]}>
+      {requests.length === 0 && !isFormVisible ? (
+        <View style={styles.iconContainer}>
+          <Icon
+            name="file-document-edit-outline"
+            size={100}
+            color={darkMode ? '#888' : '#075e54'}
+          />
+          <Text style={[styles.noRequestText, darkMode ? styles.darkText : {}]}>
+            No request sent yet. Send one and they will appear here.
+          </Text>
+        </View>
+      ) : (
+        <ScrollView style={styles.scrollContainer}>
+          {requests.map((request) => (
+            <View key={request.$id} style={styles.requestItem}>
+              <Text style={styles.requestText}>
+                Destination: {request.destination}
+              </Text>
+              <Text style={styles.requestText}>Date: {request.datetravel}</Text>
+              <Text style={styles.requestText}>
+                Pickup Time: {request.pickuptime}
+              </Text>
+              <Text style={styles.requestText}>
+                Drop-off Location: {request.pickupplace}
+              </Text>
+
+              <Text style={styles.requestText}>
+                Return Date: {request.returndate}
+              </Text>
+
+              <Text style={styles.requestText}>
+                Return Pickup Time: {request.pickuptimereturn}
+              </Text>
+              <Text style={styles.requestText}>
+                Category: {request.category}
+              </Text>
+              {request.description && (
+                <Text style={styles.requestText}>
+                  Description: {request.description}
+                </Text>
+              )}
+              <TouchableOpacity
+                style={styles.cancelRequestButton}
+                onPress={() => {
+                  Alert.alert(
+                    'Confirm Cancellation',
+                    'Are you sure you want to cancel this request?',
+                    [
+                      { text: 'Cancel', style: 'cancel' },
+                      { text: 'OK', onPress: () => cancelRequest(request.$id) },
+                    ]
+                  );
+                }}>
+                <Text style={styles.cancelRequestButtonText}>
+                  Cancel Request
+                </Text>
+              </TouchableOpacity>
+            </View>
+          ))}
+        </ScrollView>
+      )}
+
+      <TouchableOpacity
+        style={styles.addRequestButton}
+        onPress={toggleFormVisibility}>
+        <Text style={styles.addRequestButtonText}>Add Request</Text>
+      </TouchableOpacity>
+
+      {isFormVisible && (
+        <View style={styles.formContainer}>
+          <TextInput
+            placeholder="Destination"
+            style={[styles.input, darkMode ? styles.darkInput : {}]}
+            placeholderTextColor={darkMode ? '#bbb' : '#999'}
+            value={destination}
+            onChangeText={setDestination}
+          />
+          <TextInput
+            placeholder="Date of Travel (dd/mm/yyyy)"
+            style={[styles.input, darkMode ? styles.darkInput : {}]}
+            placeholderTextColor={darkMode ? '#bbb' : '#999'}
+            value={date}
+            onChangeText={setDate}
+          />
+          <TextInput
+            placeholder="Pickup Time"
+            style={[styles.input, darkMode ? styles.darkInput : {}]}
+            placeholderTextColor={darkMode ? '#bbb' : '#999'}
+            value={pickupTime}
+            onChangeText={setPickupTime}
+          />
+          <TextInput
+            placeholder="Drop Off Location"
+            style={[styles.input, darkMode ? styles.darkInput : {}]}
+            placeholderTextColor={darkMode ? '#bbb' : '#999'}
+            value={pickupPlace}
+            onChangeText={setPickupPlace}
+          />
+          <TextInput
+            placeholder="Return Date (dd/mm/yyyy)"
+            style={[styles.input, darkMode ? styles.darkInput : {}]}
+            placeholderTextColor={darkMode ? '#bbb' : '#999'}
+            value={returnDate}
+            onChangeText={setReturnDate}
+          />
+          <TextInput
+            placeholder="Pickup Time on Return (00:00)"
+            style={[styles.input, darkMode ? styles.darkInput : {}]}
+            placeholderTextColor={darkMode ? '#bbb' : '#999'}
+            value={pickupTimeReturn}
+            onChangeText={setPickupTimeReturn}
+          />
+          <Picker
+            selectedValue={eventCategory}
+            style={[styles.picker, darkMode ? styles.darkPicker : {}]}
+            onValueChange={(itemValue) => setEventCategory(itemValue)}>
+            <Picker.Item label="School" value="School" />
+            <Picker.Item label="Home" value="Home" />
+            <Picker.Item label="Sports" value="Sports" />
+            <Picker.Item label="Other" value="Other" />
+          </Picker>
+          {eventCategory === 'Other' && (
+            <TextInput
+              placeholder="Short Description"
+              style={[styles.input, darkMode ? styles.darkInput : {}]}
+              placeholderTextColor={darkMode ? '#bbb' : '#999'}
+              value={otherCategory}
+              onChangeText={setOtherCategory}
+            />
+          )}
+          <View style={styles.buttonContainer}>
+            <TouchableOpacity
+              style={styles.cancelButton}
+              onPress={toggleFormVisibility}>
+              <Text style={styles.cancelButtonText}>Cancel</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.submitButton}
+              onPress={handleSubmitRequest}>
+              <Text style={styles.submitButtonText}>Add Request</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      )}
+    </View>
+  );
+};
+
+const ProfileScreen = ({ navigation }) => {
+  const [username, setUsername] = useState('');
+
+  useEffect(() => {
+    const fetchUsername = async () => {
+      try {
+        const savedUsername = await AsyncStorage.getItem('username');
+        if (savedUsername) {
+          setUsername(savedUsername);
+          navigation.navigate('Home', { username: savedUsername });
+        }
+      } catch (error) {
+        console.error('Error fetching username from storage:', error);
+      }
+    };
+
+    fetchUsername();
+  }, []);
+
+  const handleSaveUsername = async () => {
+    try {
+      await AsyncStorage.setItem('username', username);
+      navigation.navigate('Home', { username });
+    } catch (error) {
+      console.error('Error saving username to storage:', error);
+    }
+  };
+
+  return (
+    <View style={styles.container}>
+      <Text style={styles.welcomeText}>Welcome {username}!</Text>
+      <TextInput
+        placeholder="Full Name & Surname"
+        style={styles.input}
+        placeholderTextColor="#999"
+        value={username}
+        onChangeText={setUsername}
+      />
+      <TouchableOpacity
+        style={styles.submitButton}
+        onPress={handleSaveUsername}>
+        <Text style={styles.submitButtonText}>Save Username</Text>
+      </TouchableOpacity>
+    </View>
+  );
+};
+
+const App = () => {
+  return (
+    <NavigationContainer independent={true}>
+      <Tab.Navigator
+        screenOptions={{
+          headerShown: false,
+          tabBarActiveTintColor: '#111', // Set active tint color to #111
+          tabBarInactiveTintColor: 'gray', // Optional: Set inactive tint color
+        }}
+      >
+        <Tab.Screen
+          name="Profile"
+          component={ProfileScreen}
+          options={{
+            tabBarIcon: ({ color, size }) => (
+              <Icon name="account" color={color} size={size} />
+            ),
+          }}
+        />
+        <Tab.Screen
+          name="Home"
+          component={StudentHomeScreen}
+          options={{
+            tabBarIcon: ({ color, size }) => (
+              <Icon name="home" color={color} size={size} />
+            ),
+          }}
+        />
+      </Tab.Navigator>
+    </NavigationContainer>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    paddingHorizontal: 20,
+    paddingTop: 50,
+    backgroundColor: '#F7F8FA',
+    position: 'relative', // Add relative positioning
+  },
+  welcomeText: {
+    fontSize: 23,
+    textAlign: 'center',
+    marginBottom: 50,
+    marginTop: 10,
+  },
+
+  darkContainer: {
+    backgroundColor: '#1c1c1c',
+  },
+  scrollContainer: {
+    flexGrow: 1, // Allow ScrollView to take the full height
+  },
+  iconContainer: {
+    alignItems: 'center',
+    marginTop: 100,
+  },
+  noRequestText: {
+    fontSize: 16,
+    textAlign: 'center',
+    marginTop: 20,
+    color: '#888',
+    paddingHorizontal: 30,
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 10,
+    padding: 10,
+    marginBottom: 10,
+  },
+  darkInput: {
+    backgroundColor: '#333',
+    color: '#fff',
+  },
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center', // Add this line
+},
+  cancelButton: {
+    marginTop:40,
+    backgroundColor: '#111',
+    paddingVertical: 10, // Add some vertical padding
+    paddingHorizontal: 40,
+    display: 'flex',
+    alignItems: 'center',
+    borderRadius: 10,
+},
+
+  cancelButtonText: {
+    fontSize: 16,
+    color: '#fff',
+    textAlign: 'center',
+  },
+  submitButton: {
+    backgroundColor: '#1f471f',
+    paddingVertical: 12,
+    paddingHorizontal: 40,
+    borderRadius: 10,
+    marginTop: 40,
+  },
+  submitButtonText: {
+    fontSize: 16,
+    color: '#fff',
+    textAlign: 'center',
+  },
+  addRequestButton: {
+    backgroundColor: '#1f471f',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 10,
+    alignSelf: 'center',
+    marginTop: 20,
+    position: 'absolute',
+    bottom: 20, // Position it closer to the bottom of the screen
+  },
+  addRequestButtonText: {
+    color: '#FFF',
+    fontSize: 16,
+  },
+  darkPicker: {
+    color: '#fff',
+  },
+  requestItem: {
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    padding: 10,
+    marginVertical: 5,
+    shadowColor: '#000',
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
+    elevation: 3,
+  },
+  requestText: {
+    fontSize: 14,
+    color: '#333',
+  },
+  cancelRequestButton: {
+    backgroundColor: '#133',
+    paddingVertical: 10,
+    borderRadius: 10,
+    marginTop: 5,
+  },
+  cancelRequestButtonText: {
+    color: '#fff',
+    textAlign: 'center',
+  },
+  formContainer: {
+    position: 'absolute', // Overlay the form on top of the request list
+    top: 20, // Adjust as needed to fit your design
+    left: 0,
+    right: 0,
+    backgroundColor: '#fff',
+    padding: 20,
+    borderRadius: 10,
+    shadowColor: '#000',
+    shadowOpacity: 0.2,
+    shadowRadius: 5,
+    height: '140%',
+    elevation: 5,
+    zIndex: 10, // Ensure it appears above other components
+  },
+});
+export default App;
