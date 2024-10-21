@@ -21,12 +21,15 @@ const linking = {
   prefixes: ['http://yourapp.com', 'https://yourapp.com'],
   config: {
     screens: {
-      Home: '',
+      Home: {
+        path: '', // This keeps the Home screen at the root
+      },
       Student: 'student',
       DriverOSP: 'driverosp',
     },
   },
 };
+
 
 // Custom header component
 const CustomHeader = ({ navigation, title, canGoBack, onAboutPress }) => {
