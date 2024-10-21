@@ -33,7 +33,8 @@
     "react-native-share": "*",
     "react-native-vector-icons": "*",
     "react-native-view-shot": "3.8.0",
-    "react-native-web": "~0.19.10"
+    "react-native-web": "~0.19.6",
+    "@expo/webpack-config": "0.17.0"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0"
