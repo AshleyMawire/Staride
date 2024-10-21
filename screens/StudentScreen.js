@@ -47,7 +47,7 @@ const StudentHomeScreen = ({ navigation }) => {
   const [pickupTimeReturn, setPickupTimeReturn] = useState('');
   const [requests, setRequests] = useState([]);
   const [username, setUsername] = useState('');
-  
+  const [category, setCategory] = useState('');
 
   // New states for the date picker
   const [showModal, setShowModal] = useState(false);
@@ -62,7 +62,9 @@ const StudentHomeScreen = ({ navigation }) => {
           fetchRequests(storedUsername);
         }
       } catch (error) {
-        console.error('Error fetching username from storage:', error);
+        alert('Looks like you did not set or save your username, please set a username otherwise your requests wont be sent. Redirecting you to your profile')
+        openModal();
+
       }
     };
 
@@ -106,7 +108,8 @@ const StudentHomeScreen = ({ navigation }) => {
       !pickupTime.trim() &&
       !pickupPlace.trim() &&
       !returnDate.trim() &&
-      !pickupTimeReturn.trim()
+      !pickupTimeReturn.trim() &&
+      !category.trim()
     ) {
       showAlert('Oops cannot submit request', 'All fields are required');
       return false;
@@ -134,6 +137,11 @@ const StudentHomeScreen = ({ navigation }) => {
       showAlert('Oops cannot submit request', 'Pickup Time is required');
       return false;
     }
+    
+    /*if(!category.trim()){
+      showAlert('Oops cannot submit request', 'Category is required');
+      return false;
+    }*/
 
     if (!timePattern.test(pickupTime)) {
       showAlert(
@@ -177,28 +185,27 @@ const StudentHomeScreen = ({ navigation }) => {
     const [hours, setHours] = useState('06'); // Default to 12
     const [minutes, setMinutes] = useState('00'); // Default to 00
     const [period, setPeriod] = useState('AM'); // Default to AM
-  
+
     const handleOkPress = () => {
       setPickupTime(`${hours}:${minutes} ${period}`);
       setModalVisible(false);
     };
-  
+
     return (
       <View style={{}}>
         <TextInput
-          placeholder="Pickup Time (hh:mm AM/PM)"
+          placeholder="Pickup Time"
           style={styles.input}
           placeholderTextColor="#999"
           value={pickupTime}
           onFocus={() => setModalVisible(true)} // Open modal on focus
         />
-  
+
         <Modal
           transparent={true}
           visible={modalVisible}
           animationType="slide"
-          onRequestClose={() => setModalVisible(false)}
-        >
+          onRequestClose={() => setModalVisible(false)}>
           <View style={styles.modalContainer}>
             <View style={styles.timePicker}>
               <TextInput
@@ -217,7 +224,8 @@ const StudentHomeScreen = ({ navigation }) => {
                 value={minutes}
                 onChangeText={setMinutes}
               />
-              <TouchableOpacity onPress={() => setPeriod(period === 'AM' ? 'PM' : 'AM')}>
+              <TouchableOpacity
+                onPress={() => setPeriod(period === 'AM' ? 'PM' : 'AM')}>
                 <Text style={styles.period}>{period}</Text>
               </TouchableOpacity>
             </View>
@@ -234,29 +242,28 @@ const StudentHomeScreen = ({ navigation }) => {
     const [modalVisible, setModalVisible] = useState(false);
     const [hoursReturn, setHoursReturn] = useState('05'); // Default to 12
     const [minutesReturn, setMinutesReturn] = useState('00'); // Default to 00
-    const [periodReturn, setPeriodReturn] = useState('AM'); // Default to AM
-  
+    const [periodReturn, setPeriodReturn] = useState('PM'); // Default to AM
+
     const handleOkPressReturn = () => {
       setPickupTimeReturn(`${hoursReturn}:${minutesReturn} ${periodReturn}`);
       setModalVisible(false);
     };
-  
+
     return (
       <View style={{}}>
         <TextInput
-          placeholder="Pickup Time on Return (hh:mm AM/PM)"
+          placeholder="Pickup Time on Return"
           style={styles.input}
           placeholderTextColor="#999"
           value={pickupTimeReturn}
           onFocus={() => setModalVisible(true)} // Open modal on focus
         />
-  
+
         <Modal
           transparent={true}
           visible={modalVisible}
           animationType="slide"
-          onRequestClose={() => setModalVisible(false)}
-        >
+          onRequestClose={() => setModalVisible(false)}>
           <View style={styles.modalContainer}>
             <View style={styles.timePicker}>
               <TextInput
@@ -275,11 +282,16 @@ const StudentHomeScreen = ({ navigation }) => {
                 value={minutesReturn}
                 onChangeText={setMinutesReturn}
               />
-              <TouchableOpacity onPress={() => setPeriodReturn(periodReturn === 'AM' ? 'PM' : 'AM')}>
+              <TouchableOpacity
+                onPress={() =>
+                  setPeriodReturn(periodReturn === 'AM' ? 'PM' : 'AM')
+                }>
                 <Text style={styles.period}>{periodReturn}</Text>
               </TouchableOpacity>
             </View>
-            <TouchableOpacity style={styles.okButton} onPress={handleOkPressReturn}>
+            <TouchableOpacity
+              style={styles.okButton}
+              onPress={handleOkPressReturn}>
               <Text style={styles.okButtonText}>OK</Text>
             </TouchableOpacity>
           </View>
@@ -356,10 +368,10 @@ const StudentHomeScreen = ({ navigation }) => {
     const days = [];
     const currentDate = new Date();
     const dayOfWeek = currentDate.getDay();
-  
+
     // Calculate days until next Monday
-    const daysUntilNextMonday = (dayOfWeek === 0) ? 1 : (8 - dayOfWeek);
-  
+    const daysUntilNextMonday = dayOfWeek === 0 ? 1 : 8 - dayOfWeek;
+
     for (let i = 0; i < 7; i++) {
       const nextDay = new Date(currentDate);
       nextDay.setDate(currentDate.getDate() + daysUntilNextMonday + i);
@@ -369,9 +381,9 @@ const StudentHomeScreen = ({ navigation }) => {
       const dayNumber = nextDay.getDate();
       days.push({ dayString, dayNumber, date: nextDay });
     }
-    
+
     setDaysOfWeek(days);
-  }
+  };
   const formatDate = (dateObj) => {
     const day = `0${dateObj.getDate()}`.slice(-2);
     const month = `0${dateObj.getMonth() + 1}`.slice(-2);
@@ -455,7 +467,7 @@ const StudentHomeScreen = ({ navigation }) => {
               />
               <Text>The date will be:</Text>
               <TextInput
-                placeholder="Date of Travel (dd/mm/yyyy)"
+                placeholder="Date of Travel"
                 style={styles.input}
                 placeholderTextColor="#999"
                 value={date}
@@ -463,7 +475,7 @@ const StudentHomeScreen = ({ navigation }) => {
                 onChangeText={setDate}
               />
               <Text>I need to be picked up at:</Text>
-              <TimePicker/>
+              <TimePicker />
               <Text> In need to be dropped off at:</Text>
               <TextInput
                 placeholder="Drop Off Location"
@@ -472,16 +484,21 @@ const StudentHomeScreen = ({ navigation }) => {
                 value={pickupPlace}
                 onChangeText={setPickupPlace}
               />
-              <Text>I will be back on campus:</Text>
-              <TextInput
-                placeholder="Return Date"
-                style={styles.input}
-                placeholderTextColor="#999"
-                value={returnDate}
-                onChangeText={setReturnDate}
-              />
+              <View>
+                <Text>I will be back on campus:</Text>
+
+                {/* Text Input for Return Date */}
+                <TextInput
+                  placeholder="Return Date"
+                  style={styles.input}
+                  placeholderTextColor="#999"
+                  value={returnDate}
+                  onChangeText={setReturnDate}
+                />
+              </View>
+
               <Text> On Return I need to be picked up at:</Text>
-              <ReturnTimePicker/>
+              <ReturnTimePicker />
               <Text
                 style={{
                   fontWeight: 'bold',
@@ -496,8 +513,8 @@ const StudentHomeScreen = ({ navigation }) => {
                 style={styles.picker}
                 onValueChange={(itemValue) => setEventCategory(itemValue)}>
                 <Picker.Item label="School" value="School" />
-                <Picker.Item label="Home" value="Home" />
                 <Picker.Item label="Sports" value="Sports" />
+                <Picker.Item label="Trip" value="Trip" />
                 <Picker.Item label="Other" value="Other" />
               </Picker>
               {eventCategory === 'Other' && (
@@ -681,11 +698,11 @@ const styles = StyleSheet.create({
   wrapper: {
     flex: 1,
     top: isLargeScreen ? 5 : 5, // Apply only on large screens
-    right: Platform.OS=='web' ? '0' : 0, // Apply only on large screens
+    right: Platform.OS == 'web' ? '0' : 0, // Apply only on large screens
     borderRadius: isLargeScreen ? 30 : 0, // Apply rounded corners on large screens
     position: 'absolute',
     left: 0,
-    marginTop:15,
+    marginTop: 15,
     height: '100%',
     backgroundColor: '#f3f3f3',
     zIndex: 1,
@@ -695,7 +712,7 @@ const styles = StyleSheet.create({
   },
   iconContainer: {
     alignItems: 'center',
-    marginTop: Platform.OS=='web' ?  150 : 200,
+    marginTop: Platform.OS == 'web' ? 150 : 200,
   },
   noRequestText: {
     fontSize: 16,
@@ -714,7 +731,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
     fontFamily: Platform.OS === 'web' ? 'Poppins' : 'System',
   },
- 
+
   modalContent: {
     width: '70%',
     backgroundColor: 'white',
@@ -735,28 +752,28 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#ccc',
     margin: 5,
-    borderRadius:10,
+    borderRadius: 10,
     textAlign: 'center',
-    fontSize:18,
-    fontWeight:'bold',
+    fontSize: 18,
+    fontWeight: 'bold',
   },
   period: {
     margin: 10,
     fontSize: 20,
-    fontWeight:'bold',
+    fontWeight: 'bold',
     alignSelf: 'center',
   },
   okButton: {
     backgroundColor: '#1f471f',
     padding: 10,
-    width:90,
+    width: 90,
     borderRadius: 5,
     marginTop: 10,
   },
   okButtonText: {
     color: 'white',
     fontWeight: 'bold',
-    textAlign:'center'
+    textAlign: 'center',
   },
 
   profileButton: {

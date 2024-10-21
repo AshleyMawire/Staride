@@ -279,7 +279,7 @@ const DriverOSPScreen = () => {
 
               {/* Table Row for Name */}
               <View style={styles.tableRow}>
-                <Text style={styles.tableCell}>Name</Text>
+                <Text style={styles.tableCell}>Student Name</Text>
                 <Text style={styles.tableCell}>
                   {selectedSchedule.studentname}
                 </Text>
@@ -312,46 +312,57 @@ const DriverOSPScreen = () => {
 
               {/* Table Row for Pick Up Time On Leaving */}
               <View style={styles.tableRow}>
-                <Text style={styles.tableCell}>Pick Up Time On Leaving</Text>
+                <Text style={styles.tableCell}>Pick Up Time From Campus</Text>
                 <Text style={styles.tableCell}>
                   {selectedSchedule.pickuptime}
                 </Text>
               </View>
 
-              {/* Table Row for Return Date */}
-              <View style={styles.tableRow}>
-                <Text style={styles.tableCell}>Return Date</Text>
-                <Text style={styles.tableCell}>
-                  {(() => {
-                    const [day, month, year] =
-                      selectedSchedule.returndate.split('/');
-                    const formattedReturnDate = new Date(
-                      `${year}-${month}-${day}`
-                    );
-                    const dayOfWeek = formattedReturnDate.toLocaleDateString(
-                      'en-US',
-                      { weekday: 'long' }
-                    );
-                    return `${dayOfWeek}, ${day}`;
-                  })()}
-                </Text>
-              </View>
-
-              {/* Table Row for Pick Up Time On Return */}
-              <View style={styles.tableRow}>
-                <Text style={styles.tableCell}>Pick Up Time On Return</Text>
-                <Text style={styles.tableCell}>
-                  {selectedSchedule.pickuptimereturn}
-                </Text>
-              </View>
-
-              {/* Table Row for Drop-off Location */}
               <View style={styles.tableRow}>
                 <Text style={styles.tableCell}>Drop-off Location</Text>
                 <Text style={styles.tableCell}>
                   {selectedSchedule.pickupplace}
                 </Text>
               </View>
+
+              {/* Table Row for Return Date */}
+              <View style={styles.tableRow}>
+              <Text style={styles.tableCell}>Return Date</Text>
+              <Text style={styles.tableCell}>
+                {(() => {
+                  try {
+                    const [day, month, year] = selectedSchedule.returndate.split('/');
+                    const formattedReturnDate = new Date(`${year}-${month}-${day}`);
+
+                    // Check if the date is valid
+                    if (isNaN(formattedReturnDate.getTime())) {
+                      throw new Error('Invalid date format');
+                    }
+
+                    const dayOfWeek = formattedReturnDate.toLocaleDateString('en-US', {
+                      weekday: 'long',
+                    });
+
+                    return `${dayOfWeek}, ${day}`;
+                  } catch (error) {
+                    // Return the date as is if it's in an invalid format
+                    return selectedSchedule.returndate;
+                  }
+                })()}
+              </Text>
+
+              </View>
+
+              {/* Table Row for Pick Up Time On Return */}
+              <View style={styles.tableRow}>
+                <Text style={styles.tableCell}>Pick Up Time from {selectedSchedule.pickupplace}</Text>
+                <Text style={styles.tableCell}>
+                  {selectedSchedule.pickuptimereturn}
+                </Text>
+              </View>
+
+              {/* Table Row for Drop-off Location */}
+              
             </>
           )}
 
