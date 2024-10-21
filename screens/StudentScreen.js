@@ -18,6 +18,7 @@ import { Picker } from '@react-native-picker/picker';
 import { Client, Databases, ID } from 'appwrite';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Dimensions } from 'react-native';
+import moment from 'moment/moment';
 
 // Get screen dimensions
 const { width } = Dimensions.get('window');
@@ -143,20 +144,12 @@ const StudentHomeScreen = ({ navigation }) => {
     }
 
     if (!pickupPlace.trim()) {
-      showAlert('Oops cannot submit request', 'Pickup Place is required');
+      showAlert('Oops cannot submit request', 'Drop Off location is required');
       return false;
     }
 
     if (!returnDate.trim()) {
       showAlert('Oops cannot submit request', 'Return Date is required');
-      return false;
-    }
-
-    if (!datePattern.test(returnDate)) {
-      showAlert(
-        'Oops cannot submit request',
-        'Return Date must be in the format dd/mm/yyyy'
-      );
       return false;
     }
 
@@ -177,6 +170,122 @@ const StudentHomeScreen = ({ navigation }) => {
     }
 
     return true;
+  };
+
+  const TimePicker = () => {
+    const [modalVisible, setModalVisible] = useState(false);
+    const [hours, setHours] = useState('06'); // Default to 12
+    const [minutes, setMinutes] = useState('00'); // Default to 00
+    const [period, setPeriod] = useState('AM'); // Default to AM
+  
+    const handleOkPress = () => {
+      setPickupTime(`${hours}:${minutes} ${period}`);
+      setModalVisible(false);
+    };
+  
+    return (
+      <View style={{}}>
+        <TextInput
+          placeholder="Pickup Time (hh:mm AM/PM)"
+          style={styles.input}
+          placeholderTextColor="#999"
+          value={pickupTime}
+          onFocus={() => setModalVisible(true)} // Open modal on focus
+        />
+  
+        <Modal
+          transparent={true}
+          visible={modalVisible}
+          animationType="slide"
+          onRequestClose={() => setModalVisible(false)}
+        >
+          <View style={styles.modalContainer}>
+            <View style={styles.timePicker}>
+              <TextInput
+                style={styles.timeInput}
+                placeholder="HH"
+                keyboardType="numeric"
+                maxLength={2}
+                value={hours}
+                onChangeText={setHours}
+              />
+              <TextInput
+                style={styles.timeInput}
+                placeholder="MM"
+                keyboardType="numeric"
+                maxLength={2}
+                value={minutes}
+                onChangeText={setMinutes}
+              />
+              <TouchableOpacity onPress={() => setPeriod(period === 'AM' ? 'PM' : 'AM')}>
+                <Text style={styles.period}>{period}</Text>
+              </TouchableOpacity>
+            </View>
+            <TouchableOpacity style={styles.okButton} onPress={handleOkPress}>
+              <Text style={styles.okButtonText}>OK</Text>
+            </TouchableOpacity>
+          </View>
+        </Modal>
+      </View>
+    );
+  };
+
+  const ReturnTimePicker = () => {
+    const [modalVisible, setModalVisible] = useState(false);
+    const [hoursReturn, setHoursReturn] = useState('05'); // Default to 12
+    const [minutesReturn, setMinutesReturn] = useState('00'); // Default to 00
+    const [periodReturn, setPeriodReturn] = useState('AM'); // Default to AM
+  
+    const handleOkPressReturn = () => {
+      setPickupTimeReturn(`${hoursReturn}:${minutesReturn} ${periodReturn}`);
+      setModalVisible(false);
+    };
+  
+    return (
+      <View style={{}}>
+        <TextInput
+          placeholder="Pickup Time on Return (hh:mm AM/PM)"
+          style={styles.input}
+          placeholderTextColor="#999"
+          value={pickupTimeReturn}
+          onFocus={() => setModalVisible(true)} // Open modal on focus
+        />
+  
+        <Modal
+          transparent={true}
+          visible={modalVisible}
+          animationType="slide"
+          onRequestClose={() => setModalVisible(false)}
+        >
+          <View style={styles.modalContainer}>
+            <View style={styles.timePicker}>
+              <TextInput
+                style={styles.timeInput}
+                placeholder="HH"
+                keyboardType="numeric"
+                maxLength={2}
+                value={hoursReturn}
+                onChangeText={setHoursReturn}
+              />
+              <TextInput
+                style={styles.timeInput}
+                placeholder="MM"
+                keyboardType="numeric"
+                maxLength={2}
+                value={minutesReturn}
+                onChangeText={setMinutesReturn}
+              />
+              <TouchableOpacity onPress={() => setPeriodReturn(periodReturn === 'AM' ? 'PM' : 'AM')}>
+                <Text style={styles.period}>{periodReturn}</Text>
+              </TouchableOpacity>
+            </View>
+            <TouchableOpacity style={styles.okButton} onPress={handleOkPressReturn}>
+              <Text style={styles.okButtonText}>OK</Text>
+            </TouchableOpacity>
+          </View>
+        </Modal>
+      </View>
+    );
   };
 
   const handleSubmitRequest = async () => {
@@ -336,6 +445,7 @@ const StudentHomeScreen = ({ navigation }) => {
         <View style={styles.wrapper}>
           <ScrollView contentContainerStyle={styles.scrollContainer}>
             <View style={styles.formContainer}>
+              <Text>Im am going to:</Text>
               <TextInput
                 placeholder="Destination"
                 style={styles.input}
@@ -343,6 +453,7 @@ const StudentHomeScreen = ({ navigation }) => {
                 value={destination}
                 onChangeText={setDestination}
               />
+              <Text>The date will be:</Text>
               <TextInput
                 placeholder="Date of Travel (dd/mm/yyyy)"
                 style={styles.input}
@@ -351,13 +462,9 @@ const StudentHomeScreen = ({ navigation }) => {
                 onFocus={handleDateFocus}
                 onChangeText={setDate}
               />
-              <TextInput
-                placeholder="Pickup Time (hh:mm AM/PM)"
-                style={styles.input}
-                placeholderTextColor="#999"
-                value={pickupTime}
-                onChangeText={setPickupTime}
-              />
+              <Text>I need to be picked up at:</Text>
+              <TimePicker/>
+              <Text> In need to be dropped off at:</Text>
               <TextInput
                 placeholder="Drop Off Location"
                 style={styles.input}
@@ -365,20 +472,16 @@ const StudentHomeScreen = ({ navigation }) => {
                 value={pickupPlace}
                 onChangeText={setPickupPlace}
               />
+              <Text>I will be back on campus:</Text>
               <TextInput
-                placeholder="Return Date (dd/mm/yyyy)"
+                placeholder="Return Date"
                 style={styles.input}
                 placeholderTextColor="#999"
                 value={returnDate}
                 onChangeText={setReturnDate}
               />
-              <TextInput
-                placeholder="Pickup Time on Return (hh:mm AM/PM)"
-                style={styles.input}
-                placeholderTextColor="#999"
-                value={pickupTimeReturn}
-                onChangeText={setPickupTimeReturn}
-              />
+              <Text> On Return I need to be picked up at:</Text>
+              <ReturnTimePicker/>
               <Text
                 style={{
                   fontWeight: 'bold',
@@ -618,6 +721,42 @@ const styles = StyleSheet.create({
     padding: 20,
     borderRadius: 10,
     alignItems: 'center',
+  },
+
+  timePicker: {
+    flexDirection: 'row',
+    backgroundColor: '#f3f3f3',
+    padding: 20,
+    borderRadius: 10,
+  },
+  timeInput: {
+    width: 50,
+    height: 40,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    margin: 5,
+    borderRadius:10,
+    textAlign: 'center',
+    fontSize:18,
+    fontWeight:'bold',
+  },
+  period: {
+    margin: 10,
+    fontSize: 20,
+    fontWeight:'bold',
+    alignSelf: 'center',
+  },
+  okButton: {
+    backgroundColor: '#1f471f',
+    padding: 10,
+    width:90,
+    borderRadius: 5,
+    marginTop: 10,
+  },
+  okButtonText: {
+    color: 'white',
+    fontWeight: 'bold',
+    textAlign:'center'
   },
 
   profileButton: {
