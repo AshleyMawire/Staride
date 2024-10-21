@@ -12,13 +12,11 @@ import {
   Platform,
 } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { NavigationContainer } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { Picker } from '@react-native-picker/picker';
 import { Client, Databases, ID } from 'appwrite';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Dimensions } from 'react-native';
-import moment from 'moment/moment';
 
 // Get screen dimensions
 const { width } = Dimensions.get('window');
@@ -34,9 +32,8 @@ const COLLECTION_ID = '670ed9a60000deb26c2b'; // Replace with your collection ID
 
 const Tab = createBottomTabNavigator();
 
-const StudentHomeScreen = ({ navigation }) => {
+const StudentHomeScreen = () => {
   const [isFormVisible, setIsFormVisible] = useState(false);
-  const [darkMode, setDarkMode] = useState(false);
   const [eventCategory, setEventCategory] = useState('School');
   const [otherCategory, setOtherCategory] = useState('');
   const [destination, setDestination] = useState('');
@@ -47,7 +44,7 @@ const StudentHomeScreen = ({ navigation }) => {
   const [pickupTimeReturn, setPickupTimeReturn] = useState('');
   const [requests, setRequests] = useState([]);
   const [username, setUsername] = useState('');
-  const [category, setCategory] = useState('');
+  
 
   // New states for the date picker
   const [showModal, setShowModal] = useState(false);
@@ -109,7 +106,7 @@ const StudentHomeScreen = ({ navigation }) => {
       !pickupPlace.trim() &&
       !returnDate.trim() &&
       !pickupTimeReturn.trim() &&
-      !category.trim()
+      !eventCategory.trim()
     ) {
       showAlert('Oops cannot submit request', 'All fields are required');
       return false;
@@ -138,10 +135,10 @@ const StudentHomeScreen = ({ navigation }) => {
       return false;
     }
     
-    /*if(!category.trim()){
+    if(!eventCategory.trim()){
       showAlert('Oops cannot submit request', 'Category is required');
       return false;
-    }*/
+    }
 
     if (!timePattern.test(pickupTime)) {
       showAlert(
@@ -349,7 +346,8 @@ const StudentHomeScreen = ({ navigation }) => {
       console.error('Error deleting request:', error);
     }
   };
-
+  
+  
   const showConfirmAlert = (onConfirm) => {
     if (Platform.OS === 'web') {
       const confirmed = window.confirm('Are you sure?');
@@ -402,15 +400,15 @@ const StudentHomeScreen = ({ navigation }) => {
   };
 
   return (
-    <View style={[styles.container, darkMode ? styles.darkContainer : {}]}>
+    <View style={styles.container}>
       {requests.length === 0 && !isFormVisible ? (
         <View style={styles.iconContainer}>
           <Icon
             name="file-document-edit-outline"
             size={100}
-            color={darkMode ? '#888' : '#1f471f'}
+            color={ '#1f471f'}
           />
-          <Text style={[styles.noRequestText, darkMode ? styles.darkText : {}]}>
+          <Text style={styles.noRequestText}>
             No request sent yet. Send one and they will appear here.
           </Text>
         </View>
