@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef } from "react";
 import {
   View,
   Text,
@@ -10,29 +10,29 @@ import {
   Image,
   ScrollView,
   Platform,
-} from 'react-native';
-import { Client, Databases } from 'appwrite';
-import locationIcon from './location.png';
-import scheduleIcon from './scheduling.png';
-import tableIcon from './table.png';
-import ViewShot from 'react-native-view-shot'; // For capturing screenshots
-import * as Sharing from 'expo-sharing'; // For sharing the image
+} from "react-native";
+import { Client, Databases } from "appwrite";
+import locationIcon from "./location.png";
+import scheduleIcon from "./scheduling.png";
+import tableIcon from "./table.png";
+import ViewShot from "react-native-view-shot"; // For capturing screenshots
+import * as Sharing from "expo-sharing"; // For sharing the image
 
 // Initialize Appwrite client
 const client = new Client()
-  .setEndpoint('https://cloud.appwrite.io/v1') // Replace with your Appwrite endpoint
-  .setProject('670ed3a4003543fc2496'); // Replace with your project ID
+  .setEndpoint("https://cloud.appwrite.io/v1") // Replace with your Appwrite endpoint
+  .setProject("670ed3a4003543fc2496"); // Replace with your project ID
 
 const databases = new Databases(client);
-const DATABASE_ID = '670ed992001991e51d97'; // Replace with your database ID
-const COLLECTION_ID = '670ed9a60000deb26c2b'; // Replace with your collection ID
+const DATABASE_ID = "670ed992001991e51d97"; // Replace with your database ID
+const COLLECTION_ID = "670ed9a60000deb26c2b"; // Replace with your collection ID
 
 const DriverOSPScreen = () => {
   const [selectedSchedule, setSelectedSchedule] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [studentsData, setStudentsData] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [filterOption, setFilterOption] = useState('Today');
+  const [filterOption, setFilterOption] = useState("Today");
   const [tableModalVisible, setTableModalVisible] = useState(false);
   const viewShotRef = useRef(); // Reference for capturing table view
 
@@ -45,7 +45,7 @@ const DriverOSPScreen = () => {
     try {
       const response = await databases.listDocuments(
         DATABASE_ID,
-        COLLECTION_ID
+        COLLECTION_ID,
       );
       const filteredData = filterSchedules(response.documents);
       const sortedData = filteredData.sort((a, b) => {
@@ -55,20 +55,20 @@ const DriverOSPScreen = () => {
       });
       setStudentsData(sortedData);
     } catch (error) {
-      console.error('Error fetching data:', error);
+      console.error("Error fetching data:", error);
     } finally {
       setLoading(false);
     }
   };
 
   const parseTime = (timeString) => {
-    const [time, modifier] = timeString.split(' ');
-    let [hours, minutes] = time.split(':').map(Number);
+    const [time, modifier] = timeString.split(" ");
+    let [hours, minutes] = time.split(":").map(Number);
 
-    if (modifier === 'PM' && hours !== 12) {
+    if (modifier === "PM" && hours !== 12) {
       hours += 12;
     }
-    if (modifier === 'AM' && hours === 12) {
+    if (modifier === "AM" && hours === 12) {
       hours = 0;
     }
 
@@ -78,16 +78,16 @@ const DriverOSPScreen = () => {
   };
 
   const parseDate = (dateString) => {
-    const [day, month, year] = dateString.split('/');
+    const [day, month, year] = dateString.split("/");
     return new Date(`${year}-${month}-${day}`);
   };
 
   const formatDate = (dateString) => {
     const date = parseDate(dateString);
-    return date.toLocaleDateString('en-US', {
-      weekday: 'long',
-      day: 'numeric',
-      month: 'long',
+    return date.toLocaleDateString("en-US", {
+      weekday: "long",
+      day: "numeric",
+      month: "long",
     });
   };
 
@@ -108,24 +108,24 @@ const DriverOSPScreen = () => {
     nextWeekEnd.setDate(nextWeekStart.getDate() + 6);
 
     switch (filterOption) {
-      case 'Today':
+      case "Today":
         return schedules.filter(
           (schedule) =>
             parseDate(schedule.datetravel).toDateString() ===
-            today.toDateString()
+            today.toDateString(),
         );
-      case 'Tomorrow':
+      case "Tomorrow":
         return schedules.filter(
           (schedule) =>
             parseDate(schedule.datetravel).toDateString() ===
-            tomorrow.toDateString()
+            tomorrow.toDateString(),
         );
-      case 'This Week':
+      case "This Week":
         return schedules.filter((schedule) => {
           const travelDate = parseDate(schedule.datetravel);
           return travelDate >= startOfWeek && travelDate <= endOfWeek;
         });
-      case 'Next Week':
+      case "Next Week":
         return schedules.filter((schedule) => {
           const travelDate = parseDate(schedule.datetravel);
           return travelDate >= nextWeekStart && travelDate <= nextWeekEnd;
@@ -145,21 +145,22 @@ const DriverOSPScreen = () => {
     if (await Sharing.isAvailableAsync()) {
       await Sharing.shareAsync(uri); // Share the captured image
     } else {
-      alert('Sharing is not available on this platform');
+      alert("Sharing is not available on this platform");
     }
   };
 
   const renderStudentItem = ({ item }) => (
     <TouchableOpacity
       style={styles.listItem}
-      onPress={() => handleSelectSchedule(item)}>
-      <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+      onPress={() => handleSelectSchedule(item)}
+    >
+      <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
         <Text style={styles.studentName}>{item.studentname}</Text>
         <Text style={styles.time}>{item.pickuptime}</Text>
       </View>
       <Text style={styles.studentText}>
         <Image source={locationIcon} style={styles.locationIcon} />
-        {item.destination}
+        Is Going: {item.destination}
       </Text>
     </TouchableOpacity>
   );
@@ -187,19 +188,21 @@ const DriverOSPScreen = () => {
 
   const renderTabBar = () => (
     <View style={styles.tabBar}>
-      {['Today', 'Tomorrow', 'This Week', 'Next Week'].map((option) => (
+      {["Today", "Tomorrow", "This Week", "Next Week"].map((option) => (
         <TouchableOpacity
           key={option}
           style={[
             styles.tabButton,
             filterOption === option && styles.activeTabButton,
           ]}
-          onPress={() => setFilterOption(option)}>
+          onPress={() => setFilterOption(option)}
+        >
           <Text
             style={[
               styles.tabButtonText,
               filterOption === option && styles.activeTabButtonText,
-            ]}>
+            ]}
+          >
             {option}
           </Text>
         </TouchableOpacity>
@@ -212,14 +215,15 @@ const DriverOSPScreen = () => {
       transparent={true}
       animationType="slide"
       visible={tableModalVisible}
-      onRequestClose={() => setTableModalVisible(false)}>
+      onRequestClose={() => setTableModalVisible(false)}
+    >
       <View style={styles.modalContainer}>
         <View style={styles.tableModalContent}>
           <Text style={styles.modalTitle}>Schedule Details</Text>
           <ScrollView horizontal>
             <ViewShot
               ref={viewShotRef}
-              options={{ format: 'png', quality: 0.9, backgroundColor: '#fff' }} // Added backgroundColor
+              options={{ format: "png", quality: 0.9, backgroundColor: "#fff" }} // Added backgroundColor
             >
               <View style={styles.tableContainer}>
                 <View style={styles.tableRow}>
@@ -243,16 +247,18 @@ const DriverOSPScreen = () => {
               </View>
             </ViewShot>
           </ScrollView>
-          {Platform.OS !== 'web' && (
+          {Platform.OS !== "web" && (
             <TouchableOpacity
               style={styles.captureButton}
-              onPress={captureTableAsPng}>
+              onPress={captureTableAsPng}
+            >
               <Text style={styles.captureButtonText}>Share as An Image</Text>
             </TouchableOpacity>
           )}
           <TouchableOpacity
             onPress={() => setTableModalVisible(false)}
-            style={styles.closeButton}>
+            style={styles.closeButton}
+          >
             <Text style={styles.closeButtonText}>Close</Text>
           </TouchableOpacity>
         </View>
@@ -265,7 +271,8 @@ const DriverOSPScreen = () => {
       transparent={true}
       animationType="slide"
       visible={modalVisible}
-      onRequestClose={() => setModalVisible(false)}>
+      onRequestClose={() => setModalVisible(false)}
+    >
       <View style={styles.modalContainer}>
         <View style={styles.modalContent}>
           <Text style={styles.modalTitle}>Schedule Details</Text>
@@ -299,11 +306,11 @@ const DriverOSPScreen = () => {
                 <Text style={styles.tableCell}>
                   {(() => {
                     const [day, month, year] =
-                      selectedSchedule.datetravel.split('/');
+                      selectedSchedule.datetravel.split("/");
                     const formattedDate = new Date(`${year}-${month}-${day}`);
                     const dayOfWeek = formattedDate.toLocaleDateString(
-                      'en-US',
-                      { weekday: 'long' }
+                      "en-US",
+                      { weekday: "long" },
                     );
                     return `${dayOfWeek}, ${day}`;
                   })()}
@@ -327,48 +334,53 @@ const DriverOSPScreen = () => {
 
               {/* Table Row for Return Date */}
               <View style={styles.tableRow}>
-              <Text style={styles.tableCell}>Return Date</Text>
-              <Text style={styles.tableCell}>
-                {(() => {
-                  try {
-                    const [day, month, year] = selectedSchedule.returndate.split('/');
-                    const formattedReturnDate = new Date(`${year}-${month}-${day}`);
+                <Text style={styles.tableCell}>Return Date</Text>
+                <Text style={styles.tableCell}>
+                  {(() => {
+                    try {
+                      const [day, month, year] =
+                        selectedSchedule.returndate.split("/");
+                      const formattedReturnDate = new Date(
+                        `${year}-${month}-${day}`,
+                      );
 
-                    // Check if the date is valid
-                    if (isNaN(formattedReturnDate.getTime())) {
-                      throw new Error('Invalid date format');
+                      // Check if the date is valid
+                      if (isNaN(formattedReturnDate.getTime())) {
+                        throw new Error("Invalid date format");
+                      }
+
+                      const dayOfWeek = formattedReturnDate.toLocaleDateString(
+                        "en-US",
+                        {
+                          weekday: "long",
+                        },
+                      );
+
+                      return `${dayOfWeek}, ${day}`;
+                    } catch (error) {
+                      // Return the date as is if it's in an invalid format
+                      return selectedSchedule.returndate;
                     }
-
-                    const dayOfWeek = formattedReturnDate.toLocaleDateString('en-US', {
-                      weekday: 'long',
-                    });
-
-                    return `${dayOfWeek}, ${day}`;
-                  } catch (error) {
-                    // Return the date as is if it's in an invalid format
-                    return selectedSchedule.returndate;
-                  }
-                })()}
-              </Text>
-
+                  })()}
+                </Text>
               </View>
 
               {/* Table Row for Pick Up Time On Return */}
               <View style={styles.tableRow}>
-                <Text style={styles.tableCell}>Pick Up Time from {selectedSchedule.pickupplace}</Text>
+                <Text style={styles.tableCell}>Pick Up Time On Return</Text>
                 <Text style={styles.tableCell}>
                   {selectedSchedule.pickuptimereturn}
                 </Text>
               </View>
 
               {/* Table Row for Drop-off Location */}
-              
             </>
           )}
 
           <TouchableOpacity
             onPress={() => setModalVisible(false)}
-            style={styles.closeButton}>
+            style={styles.closeButton}
+          >
             <Text style={styles.closeButtonText}>Close</Text>
           </TouchableOpacity>
         </View>
@@ -386,14 +398,15 @@ const DriverOSPScreen = () => {
         onPress={() => {
           if (studentsData.length === 0) {
             Alert.alert(
-              'No Schedules',
-              'No schedules available to display in the table.',
-              [{ text: 'OK' }]
+              "No Schedules",
+              "No schedules available to display in the table.",
+              [{ text: "OK" }],
             );
           } else {
             setTableModalVisible(true);
           }
-        }}>
+        }}
+      >
         <Image source={tableIcon} style={styles.tableIcon} />
       </TouchableOpacity>
       {renderTableModal()}
@@ -404,18 +417,18 @@ const DriverOSPScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'flex-end', // Fixes navbar position to the bottom
+    justifyContent: "flex-end", // Fixes navbar position to the bottom
   },
   // Other styles...
   defaultContent: {
     flex: 1,
     padding: 20,
-    justifyContent: 'center',
+    justifyContent: "center",
   },
   studentName: {
     fontSize: 23,
-    fontWeight: 'bold',
-    fontFamily: Platform.OS === 'web' ? 'Poppins' : 'System',
+    fontWeight: "bold",
+    fontFamily: Platform.OS === "web" ? "Poppins" : "System",
   },
 
   locationIcon: {
@@ -429,110 +442,110 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     fontSize: 18,
-    color: '#075e54',
-    textAlign: 'center',
+    color: "#075e54",
+    textAlign: "center",
     marginTop: 20,
-    fontFamily: Platform.OS === 'web' ? 'Poppins' : 'System',
+    fontFamily: Platform.OS === "web" ? "Poppins" : "System",
   },
   listItem: {
     padding: 20,
     borderBottomWidth: 1,
-    borderBottomColor: '#ccc',
-    backgroundColor: '#f9f9f9',
+    borderBottomColor: "#ccc",
+    backgroundColor: "#f9f9f9",
     marginVertical: 5,
     borderRadius: 5,
   },
   studentText: {
     fontSize: 16,
-    color: '#333',
-    fontFamily: Platform.OS === 'web' ? 'Poppins' : 'System',
+    color: "#333",
+    fontFamily: Platform.OS === "web" ? "Poppins" : "System",
   },
   time: {
     fontSize: 18,
-    color: '#075e54',
-    fontWeight: 'bold',
-    fontFamily: Platform.OS === 'web' ? 'Poppins' : 'System',
+    color: "#075e54",
+    fontWeight: "bold",
+    fontFamily: Platform.OS === "web" ? "Poppins" : "System",
   },
   tabBar: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    padding: Platform.OS === 'web' ? 5 : 20,
-    backgroundColor: '#1f471f',
+    flexDirection: "row",
+    justifyContent: "space-around",
+    padding: Platform.OS === "web" ? 5 : 20,
+    backgroundColor: "#1f471f",
     borderBottomWidth: 0.2,
-    borderBottomColor: 'black',
-    color: 'white',
+    borderBottomColor: "black",
+    color: "white",
   },
   tabButton: {
     padding: 10,
   },
   tabButtonText: {
-    color: '#f2f2f2',
+    color: "#f2f2f2",
     fontSize: 16,
-    fontFamily: Platform.OS === 'web' ? 'Poppins' : 'System',
+    fontFamily: Platform.OS === "web" ? "Poppins" : "System",
   },
 
   noSchedulesContainer: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    textAlign: 'center', // Centers the text
+    justifyContent: "center",
+    alignItems: "center",
+    textAlign: "center", // Centers the text
     marginVertical: 20, // Adds space above and below the container
   },
   noSchedulesText: {
     fontSize: 18,
-    color: '#888',
-    textAlign: 'center',
+    color: "#888",
+    textAlign: "center",
     marginTop: 20,
-    fontFamily: Platform.OS === 'web' ? 'Poppins' : 'System',
+    fontFamily: Platform.OS === "web" ? "Poppins" : "System",
   },
 
   activeTabButton: {
     borderBottomWidth: 2,
-    borderBottomColor: 'orange',
+    borderBottomColor: "orange",
   },
   activeTabButtonText: {
-    fontWeight: 'bold',
+    fontWeight: "bold",
     fontSize: 15,
-    fontFamily: Platform.OS === 'web' ? 'Poppins' : 'System',
+    fontFamily: Platform.OS === "web" ? "Poppins" : "System",
   },
   modalContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
   },
   modalContent: {
-    width: '80%',
-    backgroundColor: '#f2f2f2',
+    width: "80%",
+    backgroundColor: "#f2f2f2",
     borderRadius: 10,
     padding: 20,
   },
   modalTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginBottom: 10,
-    textAlign: 'center',
-    fontFamily: Platform.OS === 'web' ? 'Poppins' : 'System',
+    textAlign: "center",
+    fontFamily: Platform.OS === "web" ? "Poppins" : "System",
   },
 
   closeButton: {
     marginTop: 20,
-    alignItems: 'center',
+    alignItems: "center",
     paddingVertical: 10,
-    backgroundColor: '#5c0b06',
+    backgroundColor: "#5c0b06",
     borderRadius: 5,
-    width: '100%', // Make it fill the width of the container
+    width: "100%", // Make it fill the width of the container
   },
   closeButtonText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 16,
-    fontWeight: 'bold',
-    fontFamily: Platform.OS === 'web' ? 'Poppins' : 'System',
+    fontWeight: "bold",
+    fontFamily: Platform.OS === "web" ? "Poppins" : "System",
   },
   tableIconContainer: {
-    position: 'absolute',
+    position: "absolute",
     bottom: 20,
     right: 20,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     borderRadius: 25,
     padding: 10,
     elevation: 5,
@@ -543,53 +556,53 @@ const styles = StyleSheet.create({
   },
 
   tableModalContent: {
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     padding: 20,
     borderRadius: 10,
-    alignItems: 'center',
-    width: '90%',
-    maxHeight: '80%',
+    alignItems: "center",
+    width: "90%",
+    maxHeight: "80%",
   },
   tableContainer: {
     marginTop: 10,
-    borderColor: '#ddd',
+    borderColor: "#ddd",
     borderWidth: 1,
-    backgroundColor: '#fff', // Ensures the table has a background
+    backgroundColor: "#fff", // Ensures the table has a background
   },
   tableRow: {
-    flexDirection: 'row',
+    flexDirection: "row",
     borderBottomWidth: 1,
-    borderBottomColor: '#1f471f',
+    borderBottomColor: "#1f471f",
   },
   tableHeader: {
     flex: 1,
     padding: 10,
-    fontWeight: 'bold',
-    backgroundColor: '#1f471f',
-    textAlign: 'center',
-    borderColor: 'white', // Adding borders
+    fontWeight: "bold",
+    backgroundColor: "#1f471f",
+    textAlign: "center",
+    borderColor: "white", // Adding borders
     borderWidth: 0.5,
-    color: 'white',
-    fontFamily: Platform.OS === 'web' ? 'Poppins' : 'System',
+    color: "white",
+    fontFamily: Platform.OS === "web" ? "Poppins" : "System",
   },
   tableCell: {
     flex: 1,
     padding: 10,
-    textAlign: 'center',
-    borderColor: '#1f471f', // Adding borders
+    textAlign: "center",
+    borderColor: "#1f471f", // Adding borders
     borderWidth: 0.5,
   },
   captureButton: {
     marginTop: 10,
     paddingVertical: 10,
     paddingHorizontal: 20,
-    backgroundColor: '#133',
+    backgroundColor: "#133",
     borderRadius: 5,
   },
   captureButtonText: {
-    color: '#fff',
-    fontWeight: 'bold',
-    fontFamily: Platform.OS === 'web' ? 'Poppins' : 'System',
+    color: "#fff",
+    fontWeight: "bold",
+    fontFamily: Platform.OS === "web" ? "Poppins" : "System",
   },
 });
 

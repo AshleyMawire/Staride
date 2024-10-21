@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -10,41 +10,40 @@ import {
   Modal,
   Image,
   Platform,
-} from 'react-native';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import { Picker } from '@react-native-picker/picker';
-import { Client, Databases, ID } from 'appwrite';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Dimensions } from 'react-native';
+} from "react-native";
+import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import Icon from "react-native-vector-icons/MaterialCommunityIcons";
+import { Picker } from "@react-native-picker/picker";
+import { Client, Databases, ID } from "appwrite";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Dimensions } from "react-native";
 
 // Get screen dimensions
-const { width } = Dimensions.get('window');
+const { width } = Dimensions.get("window");
 
 // Initialize Appwrite client
 const client = new Client()
-  .setEndpoint('https://cloud.appwrite.io/v1') // Replace with your Appwrite endpoint
-  .setProject('670ed3a4003543fc2496'); // Replace with your project ID
+  .setEndpoint("https://cloud.appwrite.io/v1") // Replace with your Appwrite endpoint
+  .setProject("670ed3a4003543fc2496"); // Replace with your project ID
 
 const databases = new Databases(client);
-const DATABASE_ID = '670ed992001991e51d97'; // Replace with your database ID
-const COLLECTION_ID = '670ed9a60000deb26c2b'; // Replace with your collection ID
+const DATABASE_ID = "670ed992001991e51d97"; // Replace with your database ID
+const COLLECTION_ID = "670ed9a60000deb26c2b"; // Replace with your collection ID
 
 const Tab = createBottomTabNavigator();
 
 const StudentHomeScreen = () => {
   const [isFormVisible, setIsFormVisible] = useState(false);
-  const [eventCategory, setEventCategory] = useState('School');
-  const [otherCategory, setOtherCategory] = useState('');
-  const [destination, setDestination] = useState('');
-  const [date, setDate] = useState('');
-  const [pickupTime, setPickupTime] = useState('');
-  const [pickupPlace, setPickupPlace] = useState('');
-  const [returnDate, setReturnDate] = useState('');
-  const [pickupTimeReturn, setPickupTimeReturn] = useState('');
+  const [eventCategory, setEventCategory] = useState("School");
+  const [otherCategory, setOtherCategory] = useState("");
+  const [destination, setDestination] = useState("");
+  const [date, setDate] = useState("");
+  const [pickupTime, setPickupTime] = useState("");
+  const [pickupPlace, setPickupPlace] = useState("");
+  const [returnDate, setReturnDate] = useState("");
+  const [pickupTimeReturn, setPickupTimeReturn] = useState("");
   const [requests, setRequests] = useState([]);
-  const [username, setUsername] = useState('');
-  
+  const [username, setUsername] = useState("");
 
   // New states for the date picker
   const [showModal, setShowModal] = useState(false);
@@ -53,15 +52,16 @@ const StudentHomeScreen = () => {
   useEffect(() => {
     const fetchUsernameAndRequests = async () => {
       try {
-        const storedUsername = await AsyncStorage.getItem('username');
+        const storedUsername = await AsyncStorage.getItem("username");
         if (storedUsername) {
           setUsername(storedUsername);
           fetchRequests(storedUsername);
         }
       } catch (error) {
-        alert('Looks like you did not set or save your username, please set a username otherwise your requests wont be sent. Redirecting you to your profile')
+        alert(
+          "Looks like you did not set or save your username, please set a username otherwise your requests wont be sent. Redirecting you to your profile",
+        );
         openModal();
-
       }
     };
 
@@ -72,14 +72,14 @@ const StudentHomeScreen = () => {
     try {
       const response = await databases.listDocuments(
         DATABASE_ID,
-        COLLECTION_ID
+        COLLECTION_ID,
       );
       const userRequests = response.documents.filter(
-        (request) => request.studentname === currentUsername
+        (request) => request.studentname === currentUsername,
       );
       setRequests(userRequests);
     } catch (error) {
-      console.error('Error fetching requests:', error);
+      console.error("Error fetching requests:", error);
     }
   };
 
@@ -88,7 +88,7 @@ const StudentHomeScreen = () => {
   };
 
   const showAlert = (title, message) => {
-    if (Platform.OS === 'web') {
+    if (Platform.OS === "web") {
       window.alert(`${title}: ${message}`);
     } else {
       Alert.alert(title, message);
@@ -108,68 +108,68 @@ const StudentHomeScreen = () => {
       !pickupTimeReturn.trim() &&
       !eventCategory.trim()
     ) {
-      showAlert('Oops cannot submit request', 'All fields are required');
+      showAlert("Oops cannot submit request", "All fields are required");
       return false;
     }
 
     if (!destination.trim()) {
-      showAlert('Oops cannot submit request', 'Destination is required');
+      showAlert("Oops cannot submit request", "Destination is required");
       return false;
     }
 
     if (!date.trim()) {
-      showAlert('Oops cannot submit request', 'Date of Travel is required');
+      showAlert("Oops cannot submit request", "Date of Travel is required");
       return false;
     }
 
     if (!datePattern.test(date)) {
       showAlert(
-        'Oops cannot submit request',
-        'Date of Travel must be in the format dd/mm/yyyy'
+        "Oops cannot submit request",
+        "Date of Travel must be in the format dd/mm/yyyy",
       );
       return false;
     }
 
     if (!pickupTime.trim()) {
-      showAlert('Oops cannot submit request', 'Pickup Time is required');
+      showAlert("Oops cannot submit request", "Pickup Time is required");
       return false;
     }
-    
-    if(!eventCategory.trim()){
-      showAlert('Oops cannot submit request', 'Category is required');
+
+    if (!eventCategory.trim()) {
+      showAlert("Oops cannot submit request", "Category is required");
       return false;
     }
 
     if (!timePattern.test(pickupTime)) {
       showAlert(
-        'Oops cannot submit request',
-        'Pickup Time must be in the format hh:mm AM/PM'
+        "Oops cannot submit request",
+        "Pickup Time must be in the format hh:mm AM/PM",
       );
       return false;
     }
 
     if (!pickupPlace.trim()) {
-      showAlert('Oops cannot submit request', 'Drop Off location is required');
+      showAlert("Oops cannot submit request", "Drop Off location is required");
       return false;
     }
 
     if (!returnDate.trim()) {
-      showAlert('Oops cannot submit request', 'Return Date is required');
+      showAlert("Oops cannot submit request", "Return Date is required");
       return false;
     }
 
     if (!pickupTimeReturn.trim()) {
       showAlert(
-        'Oops cannot submit request',
-        'Pickup Time on Return is required'
+        "Oops cannot submit request",
+        "Pickup Time on Return is required",
       );
       return false;
     }
 
     if (!timePattern.test(pickupTimeReturn)) {
       showAlert(
-        'Oops cannot submit request',
-        'Pickup Time on Return must be in the format hh:mm AM/PM'
+        "Oops cannot submit request",
+        "Pickup Time on Return must be in the format hh:mm AM/PM",
       );
       return false;
     }
@@ -179,9 +179,9 @@ const StudentHomeScreen = () => {
 
   const TimePicker = () => {
     const [modalVisible, setModalVisible] = useState(false);
-    const [hours, setHours] = useState('06'); // Default to 12
-    const [minutes, setMinutes] = useState('00'); // Default to 00
-    const [period, setPeriod] = useState('AM'); // Default to AM
+    const [hours, setHours] = useState("06"); // Default to 12
+    const [minutes, setMinutes] = useState("00"); // Default to 00
+    const [period, setPeriod] = useState("AM"); // Default to AM
 
     const handleOkPress = () => {
       setPickupTime(`${hours}:${minutes} ${period}`);
@@ -202,7 +202,8 @@ const StudentHomeScreen = () => {
           transparent={true}
           visible={modalVisible}
           animationType="slide"
-          onRequestClose={() => setModalVisible(false)}>
+          onRequestClose={() => setModalVisible(false)}
+        >
           <View style={styles.modalContainer}>
             <View style={styles.timePicker}>
               <TextInput
@@ -211,18 +212,66 @@ const StudentHomeScreen = () => {
                 keyboardType="numeric"
                 maxLength={2}
                 value={hours}
-                onChangeText={setHours}
+                onChangeText={(text) => {
+                  // Remove non-numeric characters
+                  let cleanedText = text.replace(/[^0-9]/g, "");
+
+                  // Ensure the first digit is valid (for 12-hour notation)
+                  if (cleanedText.length === 1 && parseInt(cleanedText) > 1) {
+                    cleanedText = "0" + cleanedText; // Prepend 0 if the first digit is greater than 1
+                  }
+
+                  // Ensure the value is between 01 and 12
+                  if (cleanedText.length === 2) {
+                    let numericValue = parseInt(cleanedText, 10);
+                    if (numericValue > 12) {
+                      cleanedText = "12";
+                    } else if (numericValue === 0) {
+                      cleanedText = "01"; // Convert '00' to '01' for 12-hour format
+                    }
+                  }
+
+                  setHours(cleanedText);
+                }}
               />
+
               <TextInput
                 style={styles.timeInput}
                 placeholder="MM"
                 keyboardType="numeric"
                 maxLength={2}
                 value={minutes}
-                onChangeText={setMinutes}
+                onChangeText={(text) => {
+                  // Remove non-numeric characters
+                  let cleanedText = text.replace(/[^0-9]/g, "");
+
+                  // Ensure the first digit is valid (0-5 for minutes)
+                  if (cleanedText.length === 1 && parseInt(cleanedText) > 5) {
+                    cleanedText = "0" + cleanedText; // Prepend 0 if the first digit is greater than 5
+                  }
+
+                  // Ensure the value is between 00 and 59
+                  if (cleanedText.length === 2) {
+                    let numericValue = parseInt(cleanedText, 10);
+                    if (numericValue >= 60) {
+                      cleanedText = "59"; // Cap the value at 59
+                    } else if (numericValue < 0) {
+                      cleanedText = "00"; // Ensure the minimum value is 00
+                    }
+                  }
+
+                  setMinutes(cleanedText);
+                }}
               />
+
               <TouchableOpacity
-                onPress={() => setPeriod(period === 'AM' ? 'PM' : 'AM')}>
+                style={{
+                  padding: 3,
+                  borderRadius: 5,
+                  backgroundColor: "#075e54",
+                }}
+                onPress={() => setPeriod(period === "AM" ? "PM" : "AM")}
+              >
                 <Text style={styles.period}>{period}</Text>
               </TouchableOpacity>
             </View>
@@ -237,9 +286,9 @@ const StudentHomeScreen = () => {
 
   const ReturnTimePicker = () => {
     const [modalVisible, setModalVisible] = useState(false);
-    const [hoursReturn, setHoursReturn] = useState('05'); // Default to 12
-    const [minutesReturn, setMinutesReturn] = useState('00'); // Default to 00
-    const [periodReturn, setPeriodReturn] = useState('PM'); // Default to AM
+    const [hoursReturn, setHoursReturn] = useState("05"); // Default to 12
+    const [minutesReturn, setMinutesReturn] = useState("00"); // Default to 00
+    const [periodReturn, setPeriodReturn] = useState("PM"); // Default to AM
 
     const handleOkPressReturn = () => {
       setPickupTimeReturn(`${hoursReturn}:${minutesReturn} ${periodReturn}`);
@@ -260,7 +309,8 @@ const StudentHomeScreen = () => {
           transparent={true}
           visible={modalVisible}
           animationType="slide"
-          onRequestClose={() => setModalVisible(false)}>
+          onRequestClose={() => setModalVisible(false)}
+        >
           <View style={styles.modalContainer}>
             <View style={styles.timePicker}>
               <TextInput
@@ -269,26 +319,76 @@ const StudentHomeScreen = () => {
                 keyboardType="numeric"
                 maxLength={2}
                 value={hoursReturn}
-                onChangeText={setHoursReturn}
+                onChangeText={(text) => {
+                  // Remove any non-numeric characters
+                  let cleanedText = text.replace(/[^0-9]/g, "");
+
+                  // Ensure that the first digit is either 0 or 1 (to maintain valid hour ranges)
+                  if (cleanedText.length === 1 && parseInt(cleanedText) > 1) {
+                    cleanedText = "0" + cleanedText; // Prepend 0 if the first digit is greater than 1
+                  }
+
+                  // Ensure that the final value is between 1 and 12
+                  if (cleanedText.length === 2) {
+                    let numericValue = parseInt(cleanedText, 10);
+                    if (numericValue > 12) {
+                      cleanedText = "12";
+                    } else if (numericValue === 0) {
+                      cleanedText = "01"; // Convert '00' to '01' as there's no 00 in 12-hour format
+                    }
+                  }
+
+                  setHoursReturn(cleanedText);
+                }}
               />
+
               <TextInput
                 style={styles.timeInput}
                 placeholder="MM"
                 keyboardType="numeric"
                 maxLength={2}
                 value={minutesReturn}
-                onChangeText={setMinutesReturn}
+                onChangeText={(text) => {
+                  // Remove non-numeric characters
+                  let cleanedText = text.replace(/[^0-9]/g, "");
+
+                  // Ensure that the first digit is valid (0-5 for minutes)
+                  if (cleanedText.length === 1 && parseInt(cleanedText) > 5) {
+                    cleanedText = "0" + cleanedText; // Prepend 0 if the first digit is greater than 5
+                  }
+
+                  // Ensure the value is between 00 and 59
+                  if (cleanedText.length === 2) {
+                    let numericValue = parseInt(cleanedText, 10);
+
+                    if (numericValue >= 60) {
+                      cleanedText = "59"; // Cap the value at 59
+                    } else if (numericValue < 0) {
+                      cleanedText = "00"; // Ensure the minimum value is 00
+                    }
+                  }
+
+                  setMinutesReturn(cleanedText);
+                }}
               />
+
               <TouchableOpacity
+                style={{
+                  padding: 3,
+                  borderRadius: 5,
+                  backgroundColor: "#075e54",
+                }}
                 onPress={() =>
-                  setPeriodReturn(periodReturn === 'AM' ? 'PM' : 'AM')
-                }>
+                  setPeriodReturn(periodReturn === "AM" ? "PM" : "AM")
+                }
+              >
                 <Text style={styles.period}>{periodReturn}</Text>
               </TouchableOpacity>
             </View>
             <TouchableOpacity
               style={styles.okButton}
-              onPress={handleOkPressReturn}>
+              onPress={handleOkPressReturn}
+            >
               <Text style={styles.okButtonText}>OK</Text>
             </TouchableOpacity>
           </View>
@@ -308,7 +408,7 @@ const StudentHomeScreen = () => {
         returndate: returnDate,
         pickuptimereturn: pickupTimeReturn,
         category: eventCategory,
-        description: eventCategory === 'Other' ? otherCategory : '',
+        description: eventCategory === "Other" ? otherCategory : "",
       };
 
       try {
@@ -316,26 +416,26 @@ const StudentHomeScreen = () => {
           DATABASE_ID,
           COLLECTION_ID,
           ID.unique(),
-          newRequest
+          newRequest,
         );
         setRequests([...requests, response]);
         clearForm();
         toggleFormVisibility();
       } catch (error) {
-        console.error('Error creating request:', error);
+        console.error("Error creating request:", error);
       }
     }
   };
 
   const clearForm = () => {
-    setDestination('');
-    setDate('');
-    setPickupTime('');
-    setPickupPlace('');
-    setReturnDate('');
-    setPickupTimeReturn('');
-    setOtherCategory('');
-    setEventCategory('School');
+    setDestination("");
+    setDate("");
+    setPickupTime("");
+    setPickupPlace("");
+    setReturnDate("");
+    setPickupTimeReturn("");
+    setOtherCategory("");
+    setEventCategory("School");
   };
 
   const cancelRequest = async (id) => {
@@ -343,21 +443,20 @@ const StudentHomeScreen = () => {
       await databases.deleteDocument(DATABASE_ID, COLLECTION_ID, id);
       setRequests(requests.filter((request) => request.$id !== id));
     } catch (error) {
-      console.error('Error deleting request:', error);
+      console.error("Error deleting request:", error);
     }
   };
-  
-  
+
   const showConfirmAlert = (onConfirm) => {
-    if (Platform.OS === 'web') {
-      const confirmed = window.confirm('Are you sure?');
+    if (Platform.OS === "web") {
+      const confirmed = window.confirm("Are you sure?");
       if (confirmed) {
         onConfirm();
       }
     } else {
-      Alert.alert('Confirm Deletion', 'Are you sure?', [
-        { text: 'Cancel', style: 'cancel' },
-        { text: 'Delete', onPress: onConfirm, style: 'destructive' },
+      Alert.alert("Confirm Deletion", "Are you sure?", [
+        { text: "Cancel", style: "cancel" },
+        { text: "Delete", onPress: onConfirm, style: "destructive" },
       ]);
     }
   };
@@ -373,8 +472,8 @@ const StudentHomeScreen = () => {
     for (let i = 0; i < 7; i++) {
       const nextDay = new Date(currentDate);
       nextDay.setDate(currentDate.getDate() + daysUntilNextMonday + i);
-      const dayString = nextDay.toLocaleDateString('en-US', {
-        weekday: 'long',
+      const dayString = nextDay.toLocaleDateString("en-US", {
+        weekday: "long",
       });
       const dayNumber = nextDay.getDate();
       days.push({ dayString, dayNumber, date: nextDay });
@@ -406,7 +505,7 @@ const StudentHomeScreen = () => {
           <Icon
             name="file-document-edit-outline"
             size={100}
-            color={ '#1f471f'}
+            color={"#1f471f"}
           />
           <Text style={styles.noRequestText}>
             No request sent yet. Send one and they will appear here.
@@ -437,7 +536,8 @@ const StudentHomeScreen = () => {
                 style={styles.cancelButton}
                 onPress={() =>
                   showConfirmAlert(() => cancelRequest(request.$id))
-                }>
+                }
+              >
                 <Text style={styles.cancelButtonText}>Cancel Request</Text>
               </TouchableOpacity>
             </View>
@@ -447,7 +547,8 @@ const StudentHomeScreen = () => {
 
       <TouchableOpacity
         style={styles.addRequestButton}
-        onPress={toggleFormVisibility}>
+        onPress={toggleFormVisibility}
+      >
         <Text style={styles.addRequestButtonText}>Add Request</Text>
       </TouchableOpacity>
 
@@ -463,7 +564,11 @@ const StudentHomeScreen = () => {
                 value={destination}
                 onChangeText={setDestination}
               />
-              <Text>The date will be:</Text>
+              <Text>
+                The date will be:(Please select only fom the choices given
+                otherwise your request will not be seen. Schedules are only
+                availble for the next week)
+              </Text>
               <TextInput
                 placeholder="Date of Travel"
                 style={styles.input}
@@ -472,7 +577,7 @@ const StudentHomeScreen = () => {
                 onFocus={handleDateFocus}
                 onChangeText={setDate}
               />
-              <Text>I need to be picked up at:</Text>
+              <Text>I need to be picked up at:(Make sure to select AM/PM)</Text>
               <TimePicker />
               <Text> In need to be dropped off at:</Text>
               <TextInput
@@ -483,7 +588,9 @@ const StudentHomeScreen = () => {
                 onChangeText={setPickupPlace}
               />
               <View>
-                <Text>I will be back on campus:</Text>
+                <Text>
+                  I will be back on campus:(Write NOT SURE if you are not sure)
+                </Text>
 
                 {/* Text Input for Return Date */}
                 <TextInput
@@ -495,27 +602,33 @@ const StudentHomeScreen = () => {
                 />
               </View>
 
-              <Text> On Return I need to be picked up at:</Text>
+              <Text>
+                {" "}
+                On Return I need to be picked up at: (Make sure you select
+                AM/PM)
+              </Text>
               <ReturnTimePicker />
               <Text
                 style={{
-                  fontWeight: 'bold',
+                  fontWeight: "bold",
                   fontSize: 19,
-                  textAlign: 'center',
-                  fontFamily: Platform.OS === 'web' ? 'Poppins' : 'System',
-                }}>
-                Select Category (School, Sports, Home, Other)
+                  textAlign: "center",
+                  fontFamily: Platform.OS === "web" ? "Poppins" : "System",
+                }}
+              >
+                Reason for travel
               </Text>
               <Picker
                 selectedValue={eventCategory}
                 style={styles.picker}
-                onValueChange={(itemValue) => setEventCategory(itemValue)}>
+                onValueChange={(itemValue) => setEventCategory(itemValue)}
+              >
                 <Picker.Item label="School" value="School" />
                 <Picker.Item label="Sports" value="Sports" />
                 <Picker.Item label="Trip" value="Trip" />
                 <Picker.Item label="Other" value="Other" />
               </Picker>
-              {eventCategory === 'Other' && (
+              {eventCategory === "Other" && (
                 <TextInput
                   placeholder="Short Description"
                   style={styles.input}
@@ -527,12 +640,14 @@ const StudentHomeScreen = () => {
               <View style={styles.buttonContainer}>
                 <TouchableOpacity
                   style={styles.cancelButton}
-                  onPress={toggleFormVisibility}>
+                  onPress={toggleFormVisibility}
+                >
                   <Text style={styles.cancelButtonText}>Cancel</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={styles.submitButton}
-                  onPress={handleSubmitRequest}>
+                  onPress={handleSubmitRequest}
+                >
                   <Text style={styles.submitButtonText}>Add Request</Text>
                 </TouchableOpacity>
               </View>
@@ -546,35 +661,38 @@ const StudentHomeScreen = () => {
         <View style={styles.modalContainer}>
           <View style={styles.popup}>
             <Text
-              style={{ fontSize: 25, fontWeight: 'bold', textAlign: 'center' }}>
-              {' '}
+              style={{ fontSize: 25, fontWeight: "bold", textAlign: "center" }}
+            >
+              {" "}
               SELECT DATE
             </Text>
             {daysOfWeek.map((item, index) => (
               <TouchableOpacity
                 key={index}
-                onPress={() => handleDateSelect(item.date)}>
+                onPress={() => handleDateSelect(item.date)}
+              >
                 <Text
-                  style={
-                    styles.dateText
-                  }>{`${item.dayString} ${item.dayNumber}`}</Text>
+                  style={styles.dateText}
+                >{`${item.dayString} ${item.dayNumber}`}</Text>
               </TouchableOpacity>
             ))}
             <TouchableOpacity
               style={{
-                backgroundColor: '#1f471f',
+                backgroundColor: "#1f471f",
                 padding: 5,
                 marginTop: 15,
                 borderRadius: 10,
                 paddingVertical: 15,
               }}
-              onPress={() => setShowModal(false)}>
+              onPress={() => setShowModal(false)}
+            >
               <Text
                 style={{
-                  textAlign: 'center',
-                  color: '#fff',
-                  fontWeight: 'bold',
-                }}>
+                  textAlign: "center",
+                  color: "#fff",
+                  fontWeight: "bold",
+                }}
+              >
                 Close
               </Text>
             </TouchableOpacity>
@@ -588,12 +706,12 @@ const StudentHomeScreen = () => {
 
 const ProfileScreen = () => {
   const [isModalVisible, setModalVisible] = useState(false); // State for modal visibility
-  const [username, setUsername] = useState('');
+  const [username, setUsername] = useState("");
 
   useEffect(() => {
     const fetchUsername = async () => {
       try {
-        const savedUsername = await AsyncStorage.getItem('username');
+        const savedUsername = await AsyncStorage.getItem("username");
         if (savedUsername) {
           setUsername(savedUsername);
           closeModal(); // Automatically close the modal if the username is already available
@@ -601,7 +719,7 @@ const ProfileScreen = () => {
           openModal();
         }
       } catch (error) {
-        console.error('Error fetching username from storage:', error);
+        console.error("Error fetching username from storage:", error);
       }
     };
 
@@ -619,25 +737,25 @@ const ProfileScreen = () => {
   const handleSaveUsername = async () => {
     try {
       if (username.trim()) {
-        await AsyncStorage.setItem('username', username);
-        alert('Successfully Saved');
+        await AsyncStorage.setItem("username", username);
+        alert("Successfully Saved");
         closeModal(); // Close the modal after saving
       } else {
-        alert('Please enter a valid username.');
+        alert("Please enter a valid username.");
       }
     } catch (error) {
-      console.error('Error saving username to storage:', error);
+      console.error("Error saving username to storage:", error);
     }
   };
   return (
     <>
       <TouchableOpacity style={styles.profileButton} onPress={openModal}>
-        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+        <View style={{ flexDirection: "row", alignItems: "center" }}>
           <Image
-            source={require('./user.png')} // Replace with your icon path
+            source={require("./user.png")} // Replace with your icon path
             style={styles.icon}
           />
-          <Text style={{ color: '#fff' }}></Text>
+          <Text style={{ color: "#fff" }}></Text>
         </View>
       </TouchableOpacity>
 
@@ -645,27 +763,28 @@ const ProfileScreen = () => {
         visible={isModalVisible}
         animationType="slide"
         transparent={true}
-        onRequestClose={closeModal}>
+        onRequestClose={closeModal}
+      >
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
             <Text style={styles.welcomeText}>
-              WELCOME {username || 'Guest'}!
+              WELCOME {username || "Guest"}!
             </Text>
             <Image
-              source={require('./user.png')} // Replace with your icon path
+              source={require("./user.png")} // Replace with your icon path
               style={{ width: 100, height: 100, marginBottom: 10 }}
             />
             <TextInput
               placeholder="Full Name & Surname"
               style={{
-                width: '80%',
+                width: "80%",
                 borderWidth: 1,
                 padding: 15,
-                textAlign: 'center',
+                textAlign: "center",
                 borderRadius: 10,
-                borderColor: '#ccc',
+                borderColor: "#ccc",
                 fontSize: 18,
-                fontFamily: Platform.OS === 'web' ? 'Poppins' : 'System',
+                fontFamily: Platform.OS === "web" ? "Poppins" : "System",
               }}
               placeholderTextColor="#999"
               value={username}
@@ -673,7 +792,8 @@ const ProfileScreen = () => {
             />
             <TouchableOpacity
               style={styles.submitButton}
-              onPress={handleSaveUsername}>
+              onPress={handleSaveUsername}
+            >
               <Text style={styles.submitButtonText}>Save Username</Text>
             </TouchableOpacity>
           </View>
@@ -689,58 +809,58 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 20,
     paddingTop: 50,
-    backgroundColor: '#F7F8FA',
-    position: 'relative', // Add relative positioning
+    backgroundColor: "#F7F8FA",
+    position: "relative", // Add relative positioning
   },
 
   wrapper: {
     flex: 1,
     top: isLargeScreen ? 5 : 5, // Apply only on large screens
-    right: Platform.OS == 'web' ? '0' : 0, // Apply only on large screens
+    right: Platform.OS == "web" ? "0" : 0, // Apply only on large screens
     borderRadius: isLargeScreen ? 30 : 0, // Apply rounded corners on large screens
-    position: 'absolute',
+    position: "absolute",
     left: 0,
     marginTop: 15,
-    height: '100%',
-    backgroundColor: '#f3f3f3',
+    height: "100%",
+    backgroundColor: "#f3f3f3",
     zIndex: 1,
   },
   scrollContainer: {
     paddingBottom: 20,
   },
   iconContainer: {
-    alignItems: 'center',
-    marginTop: Platform.OS == 'web' ? 150 : 200,
+    alignItems: "center",
+    marginTop: Platform.OS == "web" ? 150 : 200,
   },
   noRequestText: {
     fontSize: 16,
-    textAlign: 'center',
+    textAlign: "center",
     marginTop: 5,
-    color: '#888',
+    color: "#888",
     paddingHorizontal: 30,
-    fontFamily: Platform.OS === 'web' ? 'Poppins' : 'System',
+    fontFamily: Platform.OS === "web" ? "Poppins" : "System",
   },
 
   welcomeText: {
     fontSize: 23,
-    textAlign: 'center',
+    textAlign: "center",
     marginBottom: 50,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginTop: 10,
-    fontFamily: Platform.OS === 'web' ? 'Poppins' : 'System',
+    fontFamily: Platform.OS === "web" ? "Poppins" : "System",
   },
 
   modalContent: {
-    width: '70%',
-    backgroundColor: 'white',
+    width: "70%",
+    backgroundColor: "white",
     padding: 20,
     borderRadius: 10,
-    alignItems: 'center',
+    alignItems: "center",
   },
 
   timePicker: {
-    flexDirection: 'row',
-    backgroundColor: '#f3f3f3',
+    flexDirection: "row",
+    backgroundColor: "#f3f3f3",
     padding: 20,
     borderRadius: 10,
   },
@@ -748,68 +868,69 @@ const styles = StyleSheet.create({
     width: 50,
     height: 40,
     borderWidth: 1,
-    borderColor: '#ccc',
+    borderColor: "#ccc",
     margin: 5,
     borderRadius: 10,
-    textAlign: 'center',
+    textAlign: "center",
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   period: {
     margin: 10,
     fontSize: 20,
-    fontWeight: 'bold',
-    alignSelf: 'center',
+    fontWeight: "bold",
+    alignSelf: "center",
+    color: "#f2f2f2",
   },
   okButton: {
-    backgroundColor: '#1f471f',
+    backgroundColor: "#1f471f",
     padding: 10,
     width: 90,
     borderRadius: 5,
     marginTop: 10,
   },
   okButtonText: {
-    color: 'white',
-    fontWeight: 'bold',
-    textAlign: 'center',
+    color: "white",
+    fontWeight: "bold",
+    textAlign: "center",
   },
 
   profileButton: {
-    position: 'absolute',
+    position: "absolute",
     bottom: 30, // Adjust as needed
     right: 20, // Adjust as needed
-    backgroundColor: '#1f471f',
+    backgroundColor: "#1f471f",
     padding: 8,
     borderRadius: 60,
-    alignItems: 'center',
+    alignItems: "center",
   },
   icon: {
     width: 30, // Adjust size to match your icon
     height: 30, // Adjust size to match your icon
   },
   buttonContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center', // Add this line
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center", // Add this line
   },
   cancelButton: {
     marginTop: 40,
-    backgroundColor: '#111',
+    backgroundColor: "#111",
     paddingVertical: 10, // Add some vertical padding
     paddingHorizontal: 40,
-    display: 'flex',
-    alignItems: 'center',
+    display: "flex",
+    alignItems: "center",
     borderRadius: 10,
   },
 
   cancelButtonText: {
     fontSize: 16,
-    color: '#fff',
-    textAlign: 'center',
-    fontFamily: Platform.OS === 'web' ? 'Poppins' : 'System',
+    color: "#fff",
+    textAlign: "center",
+    fontFamily: Platform.OS === "web" ? "Poppins" : "System",
   },
   submitButton: {
-    backgroundColor: '#1f471f',
+    backgroundColor: "#1f471f",
     paddingVertical: 12,
     paddingHorizontal: 40,
     borderRadius: 10,
@@ -817,71 +938,71 @@ const styles = StyleSheet.create({
   },
   submitButtonText: {
     fontSize: 16,
-    color: '#fff',
-    textAlign: 'center',
-    fontFamily: Platform.OS === 'web' ? 'Poppins' : 'System',
+    color: "#fff",
+    textAlign: "center",
+    fontFamily: Platform.OS === "web" ? "Poppins" : "System",
   },
   addRequestButton: {
-    backgroundColor: '#1f471f',
+    backgroundColor: "#1f471f",
     paddingVertical: 10,
     marginRight: 100,
     paddingHorizontal: 50,
     borderRadius: 10,
-    alignSelf: 'center',
+    alignSelf: "center",
     marginTop: 20,
-    position: 'absolute',
+    position: "absolute",
     bottom: 30, // Position it closer to the bottom of the screen
   },
   addRequestButtonText: {
-    color: '#FFF',
+    color: "#FFF",
     fontSize: 16,
-    fontFamily: Platform.OS === 'web' ? 'Poppins' : 'System',
+    fontFamily: Platform.OS === "web" ? "Poppins" : "System",
   },
 
   requestItem: {
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     borderRadius: 10,
     padding: 10,
     marginVertical: 5,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOpacity: 0.2,
     shadowRadius: 3,
     elevation: 3,
   },
   requestText: {
     fontSize: 14,
-    color: '#333',
-    fontFamily: Platform.OS === 'web' ? 'Poppins' : 'System',
+    color: "#333",
+    fontFamily: Platform.OS === "web" ? "Poppins" : "System",
   },
 
   popup: {
-    backgroundColor: 'white',
+    backgroundColor: "white",
     padding: 20,
     borderRadius: 10,
     width: 300,
   },
   dateText: {
     fontSize: 18,
-    borderBottomColor: '#075e54',
+    borderBottomColor: "#075e54",
     borderBottomWidth: 1,
     padding: 10,
-    textAlign: 'center',
-    fontFamily: Platform.OS === 'web' ? 'Poppins' : 'System',
+    textAlign: "center",
+    fontFamily: Platform.OS === "web" ? "Poppins" : "System",
   },
   modalContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0,0,0,0.5)",
   },
   formContainer: {
     padding: 20,
-    margin: 'auto', // Center the form horizontally
+    margin: "auto", // Center the form horizontally
     maxWidth: 600, // Limit form width on larger screens
-    width: width > 768 ? '80%' : '95%', // Adjust width based on screen size
-    backgroundColor: '#fff', // Example for dark mode
+    width: width > 768 ? "80%" : "95%", // Adjust width based on screen size
+    backgroundColor: "#fff", // Example for dark mode
     borderRadius: 10,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 8,
@@ -891,19 +1012,19 @@ const styles = StyleSheet.create({
     marginVertical: 10,
     padding: 10,
     borderWidth: 1,
-    borderColor: '#ccc',
+    borderColor: "#ccc",
     borderRadius: 8,
     fontSize: width > 768 ? 18 : 14, // Dynamic font size for larger screens
-    fontFamily: Platform.OS === 'web' ? 'Poppins' : 'System',
+    fontFamily: Platform.OS === "web" ? "Poppins" : "System",
   },
   picker: {
     marginVertical: 10,
     padding: 10,
     borderWidth: 1,
-    borderColor: '#ccc',
+    borderColor: "#ccc",
     borderRadius: 8,
-    width: '100%',
-    fontFamily: Platform.OS === 'web' ? 'Poppins' : 'System',
+    width: "100%",
+    fontFamily: Platform.OS === "web" ? "Poppins" : "System",
   },
 });
 

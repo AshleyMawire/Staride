@@ -16,19 +16,18 @@ import DriverOSPScreen from './screens/DriverOSPScreen';
 
 const Stack = createStackNavigator();
 
-// Linking configuration
 const linking = {
   prefixes: ['http://yourapp.com', 'https://yourapp.com'],
   config: {
     screens: {
-      Home: {
-        path: '', // This keeps the Home screen at the root
-      },
+      Home: '',
       Student: 'student',
       DriverOSP: 'driverosp',
     },
   },
+  useHash: true, // Add this line
 };
+
 
 
 // Custom header component
